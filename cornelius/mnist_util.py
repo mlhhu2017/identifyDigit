@@ -10,7 +10,7 @@ from random import randint
 # 2. download the data from http://yann.lecun.com/exdb/mnist/
 # 3. extract the .gz files and rename '.' to '-' in the file names
 #
-# get_np_array converts mnist images to ndarrays
+# get_np_array: converts mnist images to ndarrays
 #
 # inputs:
 #   path            optional, path to the mnist files (default=='data')
@@ -27,7 +27,7 @@ def get_np_array(path='data'):
     test, test_labels = mndata.load_testing()
     return np.array(train), np.array(train_labels), np.array(test), np.array(test_labels)
 
-# show_a_num plots a single picture
+# show_a_num: plots a single picture
 #
 # inputs:
 #   num    takes 1d-array with shape (784,) containing a single image
@@ -40,7 +40,7 @@ def show_a_num(num):
     img = plt.imshow(pixels, cmap='gray')
     return img
 
-# show_nums plots multiple pictures in a "grid"
+# show_nums: plots multiple pictures in a "grid"
 #
 # inputs:
 #   data      takes 2d-array with shape (n,784) containing images
@@ -51,7 +51,7 @@ def show_a_num(num):
 # outputs:
 #   img       matplotlib image
 #
-def show_nums(data,square=False,xsize=15,ysize=15):
+def show_nums(data, square=False, xsize=15, ysize=15):
     if len(data.shape) == 1:
         return show_a_num(data)
     n = len(data)
@@ -80,13 +80,13 @@ def show_nums(data,square=False,xsize=15,ysize=15):
 #   num       the number you want to filter
 #
 # outputs:
-#   arr       2d-array only containing a sinlge number
+#   arr       2d-array only containing a images of num
 #
-def get_one_num(data,labels,num):
-    return np.array([data[i] for i in range(len(data)) if labels[i] == num])
+def get_one_num(data, labels, num):
+    return np.array([val for idx, val in enumerate(data) if labels[idx] == num])
 
-# get_all_nums: creates a 1d-array containing 2d-arrays for every number
-#              ex. arr[0] = 2d-array containing all images of the number 0
+# get_all_nums: creates a 1d-array containing 2d-arrays of images for every number
+#               ex. arr[0] = 2d-array containing all images of number 0
 #
 # inputs:
 #   data      takes 2d-array with shape (n,784) containing the images
@@ -95,5 +95,5 @@ def get_one_num(data,labels,num):
 # outputs:
 #   arr       1d-array containing 2d-arrays for every number
 #
-def get_all_nums(data,labels):
-    return np.array([get_one_num(data,labels,i) for i in range(10)])
+def get_all_nums(data, labels):
+    return np.array([get_one_num(data, labels, i) for i in range(10)])
