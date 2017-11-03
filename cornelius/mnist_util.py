@@ -2,6 +2,7 @@
 from mnist import MNIST
 import math
 import numpy as np
+import itertools
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from random import randint
@@ -38,6 +39,7 @@ def get_np_array(path='data'):
 def show_a_num(num):
     pixels = num.reshape((28,28))
     img = plt.imshow(pixels, cmap='gray')
+    plt.axis("off")
     return img
 
 # show_nums: plots multiple pictures in a "grid"
@@ -51,25 +53,33 @@ def show_a_num(num):
 # outputs:
 #   img       matplotlib image
 #
-def show_nums(data, square=False, xsize=15, ysize=15):
+def show_nums(data, nrow=None, xsize=15, ysize=15):
+    n = len(data)
+    if n < 1:
+        raise ValueError("No image given!")
+
     if len(data.shape) == 1:
         return show_a_num(data)
-    n = len(data)
-    if square:
-        nrow = math.ceil(math.sqrt(n))
-        missing = nrow**2 - n
+
+    if nrow == None:
+        ncol = math.ceil(math.sqrt(n))
+        nrow = math.ceil(n/ncol)
+    else:
+        ncol = math.ceil(n/nrow)
+
+    missing = nrow*ncol - n
+    if missing != 0:
         zeros = np.zeros(missing*784)
         zeros = zeros.reshape(missing,784)
         data = np.vstack((data,zeros))
-    else:
-        factors = lambda n: set([i for i in range(1, int(n**0.5) + 1) if n % i == 0])
-        fac = factors(n)
-        nrow = max(list(fac))
+
     data = data.reshape((-1,28,28))
     data = data.reshape((nrow,-1,28,28)).swapaxes(1,2)
     data = data.reshape((nrow*28,-1))
+
     plt.figure(figsize=(xsize,ysize))
     img = plt.imshow(data, cmap='gray')
+    plt.axis("off")
     return img
 
 # get_one_num: creates 2d-array containing only images of a single number
@@ -97,3 +107,32 @@ def get_one_num(data, labels, num):
 #
 def get_all_nums(data, labels):
     return np.array([get_one_num(data, labels, i) for i in range(10)])
+
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
