@@ -16,28 +16,30 @@ def loadset(data, labels):
     """
     return tuple(map(idx.convert_from_file, [data, labels]));
 
-def showimg(img):
+def showimg(img, plotsize=[3,3]):
     """ Plots a single image as grayscaled pixel map through matplotlib.pyplot.
 
     Arguments:
         img [np.array] -- Matrix of integers to be interpreted as
         pixels of an image
+        plotsize [list(integer)] -- Sets the size of the plot for the image.
 
     Return:
         [void]
     """
     # Create new canvas and plot image without axes
-    fig = plt.figure();
+    fig = plt.figure(figsize=plotsize);
     plt.imshow(img, cmap="gray");
     plt.axis("off");
 
-def showimgset(imgs, y = None, dim = 28):
+def showimgset(imgs, y = None, dim = 28, plotsize=[10,5]):
     """ Plots a set of n images positioned in a y*x-grid through matplotlib.pyplot.
 
     Arguments:
         imgs [np.array] -- List of n images
         y [int] -- Number of rows, defaults to ceil(sqrt(n))
         dim [int] -- The dimension of a single image is dim x dim, defaults to 28
+        plotsize [list(integer)] -- Sets the size of the plot for the set of images.
 
     Return:
         [void]
@@ -65,7 +67,7 @@ def showimgset(imgs, y = None, dim = 28):
     imgmap = np.vstack([np.hstack(imgs[j*x:(j+1)*x]) for j in range(y)]);
 
     # Create new canvas, plot image map
-    fig = plt.figure();
+    fig = plt.figure(figsize=plotsize);
     plt.imshow(imgmap, cmap="gray");
     plt.axis("off");
 
@@ -106,3 +108,36 @@ def getalldigits(digit, data, labels, n=None):
     """
     # Return all entries in data where corresponding labels entry is digit.#
     return data[np.where(labels == digit)[0][:n]]
+
+def showconfmatrix(matrix, labels, plotsize=[10,10]):
+    """ Plots a confusion matrix based on the given input matrix.
+
+    Arguments:
+        matrix [np.array] -- A nxn array of frequency counts
+        labels [np.array] -- An array of n labels
+        plotsize [list(integer)] -- Sets the size of the plot for the image.
+
+    Return:
+        [void]
+    """
+    # Save matrix shape
+    x, y = matrix.shape;
+    # Create new canvas
+    fig = plt.figure(figsize=plotsize);
+    # Add suplot to canvas
+    ax = fig.add_subplot(111);
+    # Display matrix
+    img = ax.imshow(matrix, cmap=plt.cm.Pastel2);
+
+    # Add labels to fields
+    for i in range(x):
+        for j in range(y):
+            ax.annotate(str(matrix[i][j]), xy=(j,i),
+                horizontalalignment="center",
+                verticalalignment="center");
+
+    # Add color bar to the right
+    cb = fig.colorbar(img);
+    # Add labels to the axes
+    plt.xticks(range(x), labels[:x]);
+    plt.yticks(range(y), labels[:y]);
