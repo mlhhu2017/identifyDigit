@@ -2,13 +2,20 @@
 Huge part of this is from: https://www.youtube.com/watch?v=BhpvH5DuVu8
 i just added the option to change the number of hidden layers and number of nodes
 i experimented with some optimizers; seems like some do fine under certain conditions
+
++
+made the model actually usable and saving the epoch states
 '''
 
 
 import tempfile
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
-    
+import numpy as np
+import os
+import random
+
+
 def model(data):
     layers = []
     for i in range(0, n_layers):
@@ -60,10 +67,29 @@ def train(x):
                     y: epoch_y
                 })
                 epoch_loss += c
+            print('Saving current epoch to model...')
+            tf.train.Saver().save(sess, "./model.ckpt")
             print('Epoch =>', epoch, '/', epochs_no, 'loss =>', epoch_loss)      
         correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
         accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-        print('=> ', accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
+        print('Accuracy => ', accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
+
+def use(data):
+    prediction = model(x)
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+
+        for epoch in range(epochs_no):
+            try:
+                tf.train.Saver().restore(sess, "./model.ckpt")
+            except Exception as err:
+                print(str(err))
+            epoch_loss = 0
+
+        result = (sess.run(tf.argmax(prediction.eval(feed_dict={
+            x: data
+        }), 1)))
+        return result[0]
 
 
 
@@ -76,6 +102,7 @@ epochs_no = 10
 
 x = tf.placeholder('float', [None, inputsize])
 y = tf.placeholder('float')
+
 
 #load mnist
 tmp = tempfile.gettempdir() + '/mnist_data'
@@ -92,8 +119,36 @@ n_classes = 10
 batch_size = 100
 
 #how many nodes per layer?
-n_nodes = [500,500,500,500,500]
+n_nodes = [300,300,300]
 #how many layers do we need?
 n_layers = len(n_nodes)
 
-train(x)
+# ONLY TRAIN ONCE TO GENERATE THE MODEL
+if not os.path.isfile('./model.ckpt.index'):
+    print("Pretrained model does not exist...training...")
+    print("Please wait...KTHX")
+    train(x)
+    print("Launch the program again to check some Numbers ;)")
+    print("KTHXBYE")
+else:
+    print("Pretrained model exists...now useing the NN")
+    #
+    #
+    # THIS IS A DEMONSTRATION ON HOW TO ACTUALLY USE THE NN
+    #
+    # (we need more data :( )
+
+    # which sample do we want to test?
+    SAMPLE_NUM = random.randrange(mnist.test.images.shape[0])
+    print("Picking Sample with index " + str(SAMPLE_NUM))
+
+
+    use_test_sample = np.matrix(mnist.test.images[SAMPLE_NUM])
+    for i,l in enumerate(mnist.test.labels[SAMPLE_NUM]):
+        if l == 1.0:
+            use_test_label = i
+
+
+    classification = use(use_test_sample)
+    print("We got " + str(classification) + " and the real label is " + str(use_test_label))
+    print("Did we succeed? =>", use_test_label == classification)
