@@ -14,6 +14,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
 import os
 import random
+import time
 
 
 def model(data):
@@ -72,9 +73,7 @@ def train(x):
             print('Epoch =>', epoch + 1, '/', epochs_no, 'loss =>', epoch_loss)      
         correct = tf.equal(tf.argmax(prediction, axis=1), tf.argmax(y, axis=1))
         accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-        testsize = int(mnist.test.images.shape[0] * test_set_size_percent)
-        print("Testing Accuracy with", testsize, "Elements of test images")
-        print('Accuracy => ', accuracy.eval({x: mnist.test.images[:testsize], y: mnist.test.labels[:testsize]}))
+        print('Accuracy => ', accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
 
 def use(data):
     prediction = model(x)
@@ -98,9 +97,6 @@ def use(data):
 
 # width * height of each image
 inputsize = 28 * 28 
-
-# how much of the test images should be used for accuracy
-test_set_size_percent = 0.5
 
 #how many 'rounds' should we go?
 epochs_no = 10
@@ -141,15 +137,14 @@ else:
     #
     # THIS IS A DEMONSTRATION ON HOW TO ACTUALLY USE THE NN
     #
-    # test with a test image outside of the ones we used for accuracy
-    start = int(mnist.test.images.shape[0] * test_set_size_percent)
-    SAMPLE_NUM = random.randint(start,mnist.test.images.shape[0])
-    print("Picking Sample with index " + str(SAMPLE_NUM))
-    use_test_sample = np.matrix(mnist.test.images[SAMPLE_NUM])
-    for i,l in enumerate(mnist.test.labels[SAMPLE_NUM]):
+    #
+    SAMPLE_NUM = random.randint(0, mnist.validation.images.shape[0])
+    print("Using validation sample number", SAMPLE_NUM+1)
+    use_test_sample = np.matrix(mnist.validation.images[SAMPLE_NUM])
+    for j,l in enumerate(mnist.validation.labels[SAMPLE_NUM]):
         if l == 1.0:
-            use_test_label = i
+            use_test_label = j
 
     classification = use(use_test_sample)
-    print("We got " + str(classification) + "<=>(Real):" + str(use_test_label))
+    print("We got", str(classification), "<=> Real was", str(use_test_label))
     print("Did we succeed? =>", use_test_label == classification)
