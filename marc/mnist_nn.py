@@ -69,10 +69,12 @@ def train(x):
                 epoch_loss += c
             print('Saving current epoch to model...')
             tf.train.Saver().save(sess, "./model.ckpt")
-            print('Epoch =>', epoch, '/', epochs_no, 'loss =>', epoch_loss)      
-        correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
+            print('Epoch =>', epoch + 1, '/', epochs_no, 'loss =>', epoch_loss)      
+        correct = tf.equal(tf.argmax(prediction, axis=1), tf.argmax(y, axis=1))
         accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-        print('Accuracy => ', accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
+        testsize = int(mnist.test.images.shape[0] * test_set_size_percent)
+        print("Testing Accuracy with", testsize, "Elements of test images")
+        print('Accuracy => ', accuracy.eval({x: mnist.test.images[:testsize], y: mnist.test.labels[:testsize]}))
 
 def use(data):
     prediction = model(x)
@@ -88,7 +90,7 @@ def use(data):
 
         result = (sess.run(tf.argmax(prediction.eval(feed_dict={
             x: data
-        }), 1)))
+        }), axis=1)))
         return result[0]
 
 
@@ -96,6 +98,9 @@ def use(data):
 
 # width * height of each image
 inputsize = 28 * 28 
+
+# how much of the test images should be used for accuracy
+test_set_size_percent = 0.5
 
 #how many 'rounds' should we go?
 epochs_no = 10
@@ -119,7 +124,7 @@ n_classes = 10
 batch_size = 100
 
 #how many nodes per layer?
-n_nodes = [300,300,300]
+n_nodes = [500,500,500]
 #how many layers do we need?
 n_layers = len(n_nodes)
 
@@ -131,24 +136,20 @@ if not os.path.isfile('./model.ckpt.index'):
     print("Launch the program again to check some Numbers ;)")
     print("KTHXBYE")
 else:
-    print("Pretrained model exists...now useing the NN")
+    print("Pretrained model exists...now using the NN")
     #
     #
     # THIS IS A DEMONSTRATION ON HOW TO ACTUALLY USE THE NN
     #
-    # (we need more data :( )
-
-    # which sample do we want to test?
-    SAMPLE_NUM = random.randrange(mnist.test.images.shape[0])
+    # test with a test image outside of the ones we used for accuracy
+    start = int(mnist.test.images.shape[0] * test_set_size_percent)
+    SAMPLE_NUM = random.randint(start,mnist.test.images.shape[0])
     print("Picking Sample with index " + str(SAMPLE_NUM))
-
-
     use_test_sample = np.matrix(mnist.test.images[SAMPLE_NUM])
     for i,l in enumerate(mnist.test.labels[SAMPLE_NUM]):
         if l == 1.0:
             use_test_label = i
 
-
     classification = use(use_test_sample)
-    print("We got " + str(classification) + " and the real label is " + str(use_test_label))
+    print("We got " + str(classification) + "<=>(Real):" + str(use_test_label))
     print("Did we succeed? =>", use_test_label == classification)
