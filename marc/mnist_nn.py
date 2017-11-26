@@ -43,7 +43,7 @@ def model(data):
             lx = tf.add(tf.matmul(data, a['weights']), a['biases'])
         else:
             lx = tf.add(tf.matmul(res[i-1], a['weights']), a['biases'])
-        lx = tf.nn.relu(lx)
+        lx = tf.nn.softplus(lx)
         res.append(lx)
     return tf.matmul(res[len(res) - 1], layers[len(layers) - 1]['weights']) + layers[len(layers) - 1]['biases']
    
@@ -55,8 +55,7 @@ def train(x):
     optimizer = tf.train.AdamOptimizer().minimize(cost)
     # Those are some other optimizer. found out that Adam does pretty good
     # although Adagrad seems to be fine too.
-    #optimizer = tf.train.AdagradOptimizer(0.001).minimize(cost)
-    #optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.001).minimize(cost)
+    #optimizer = tf.train.AdagradOptimizer(0.03).minimize(cost)
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         for epoch in range(epochs_no):
@@ -99,7 +98,7 @@ def use(data):
 inputsize = 28 * 28 
 
 #how many 'rounds' should we go?
-epochs_no = 10
+epochs_no = 20
 
 x = tf.placeholder('float', [None, inputsize])
 y = tf.placeholder('float')
@@ -117,10 +116,10 @@ one hot means [1,0,0,0,0,0,0,0,0,0] -> its the digit 0
 n_classes = 10
 
 # how many items do we want per batch?
-batch_size = 100
+batch_size = 80
 
 #how many nodes per layer?
-n_nodes = [500,500,500]
+n_nodes = [700,700,500]
 #how many layers do we need?
 n_layers = len(n_nodes)
 
