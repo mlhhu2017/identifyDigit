@@ -1,8 +1,9 @@
 """Module to handle the mnist dataset easier with a probabilistic approach."""
 
+import itertools
+import matplotlib.pyplot as plot
 import numpy as np
 
-from matplotlib.pyplot import imshow, show, title
 from sklearn.datasets import fetch_mldata
 from scipy.stats import multivariate_normal as multivar
 
@@ -34,8 +35,8 @@ def filter_number(data, target, number):
 
 def plot_number(number_vec):
     """Reshapes a vector with shape (784, ) to (28, 28) and draws the image."""
-    imshow(number_vec.reshape(28, 28), cmap='Greys')
-    show()
+    plot.imshow(number_vec.reshape(28, 28), cmap='Greys')
+    plot.show()
 
 def plot_all_numbers(numbers, elements_per_line=10, plot_title=""):
     """Takes a list of arrays and draws them.
@@ -53,9 +54,9 @@ def plot_all_numbers(numbers, elements_per_line=10, plot_title=""):
     reshape_lam = lambda x: np.concatenate([y.reshape(28, 28).T for y in x]).T
     tmp = [reshape_lam(x) for x in lines]
 
-    title(plot_title)
-    imshow(np.concatenate(tmp, axis=0), cmap='Greys')
-    show()
+    plot.title(plot_title)
+    plot.imshow(np.concatenate(tmp, axis=0), cmap='Greys')
+    plot.show()
 
 def chunk(some_list, size):
     """Returns a list of lists which have the size of n. The last list may have
@@ -92,12 +93,51 @@ def covariance(datasets):
     """Calculates the covariance of a list of lists which contain here arrays."""
     return [np.cov(np.array(datasets[i]).T) for i in range(len(datasets))]
 
-def multivariates(datasets, covar):
+def multivariates(datasets, covar, means=None):
     """Does stuff"""
-    means = mean(datasets)
-    return [multivar(mean=means[i], cov=covar[i], allow_singular=True).logpdf for i in range(len(datasets))]
+
+    if means is None:
+        means = mean(datasets)
+
+    return [multivar(mean=means[i], cov=covar[i], allow_singular=True).logpdf\
+                for i in range(len(datasets))]
 
 def tell_number(pdfs, number):
     """Does more stuff."""
     pred = [pdf(number) for pdf in pdfs]
     return pred.index(max(pred))
+
+# https://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python
+def flatten_lists(lists):
+    """Flattens a list of lists"""
+    return [item for sublist in lists for item in sublist]
+
+# http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-glr-auto-examples-model-selection-plot-confusion-matrix-py
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plot.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+    plot.imshow(cm, interpolation='nearest', cmap=cmap)
+    plot.title(title)
+    plot.colorbar()
+    tick_marks = np.arange(len(classes))
+    plot.xticks(tick_marks, classes, rotation=45)
+    plot.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plot.text(j, i, format(cm[i, j], fmt),
+                  horizontalalignment="center",
+                  color="white" if cm[i, j] > thresh else "black")
+
+    plot.tight_layout()
+    plot.xlabel('True label')
+    plot.ylabel('Predicted label')
