@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from mnist_util import *
 
-training, test = mnist_splitted()
+training, test = load_sorted_data('data_notMNIST') 
 means = mean(training)
 
 id = [np.identity(28*28) for _ in range(len(training))]
@@ -24,7 +24,7 @@ pdfs_var_1 = multivariates(training, variances1)
 pdfs_cov = multivariates(training, covariances)
 
 tmp = flatten_lists([test[i][:20] for i in range(10)])
-print(len(tmp))
+tmp = [np.array(x) for x in tmp]
 plot_all_numbers(tmp, elements_per_line=10, plot_title="First 20 of each number from the test dataset")
 #for i in range(10):
 #    plot_all_numbers(test[i][:20], elements_per_line=10, plot_title="Test dataset: Number {0}".format(i))

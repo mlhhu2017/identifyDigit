@@ -4,8 +4,30 @@ import itertools
 import matplotlib.pyplot as plot
 import numpy as np
 
+from mnist import MNIST
 from sklearn.datasets import fetch_mldata
 from scipy.stats import multivariate_normal as multivar
+
+def load_data(path='data'):
+    """Function to retrieve the MNIST dataset.
+
+    Return:
+        (training_img, training_target, test_img, test_target)"""
+
+    mndata = MNIST(path)
+    training_img, training_target = mndata.load_training()
+    test_img, test_target = mndata.load_testing()
+
+    return training_img, training_target, test_img, test_target
+
+def load_sorted_data(path='data'):
+    """Function to retrieve the MNIST dataset sorted."""
+    t_img, t_target, test_img, test_target = load_data(path)
+
+    training = [filter_number(t_img, t_target, i) for i in range(10)]
+    test = [filter_number(test_img, test_target, i) for i in range(10)]
+
+    return training, test
 
 def mnist():
     """Function to retrieve the MNIST dataset.
