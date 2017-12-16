@@ -46,7 +46,7 @@ def model(data):
         lx = tf.nn.softplus(lx)
         res.append(lx)
     return tf.matmul(res[len(res) - 1], layers[len(layers) - 1]['weights']) + layers[len(layers) - 1]['biases']
-   
+
 
 def train(x):
     prediction = model(x)
@@ -63,13 +63,13 @@ def train(x):
             for _ in range(int(mnist.train.num_examples/batch_size)):
                 epoch_x, epoch_y = mnist.train.next_batch(batch_size)
                 _, c = sess.run([optimizer, cost], feed_dict = {
-                    x: epoch_x, 
+                    x: epoch_x,
                     y: epoch_y
                 })
                 epoch_loss += c
             print('Saving current epoch to model...')
             tf.train.Saver().save(sess, "./model.ckpt")
-            print('Epoch =>', epoch + 1, '/', epochs_no, 'loss =>', epoch_loss)      
+            print('Epoch =>', epoch + 1, '/', epochs_no, 'loss =>', epoch_loss)
         correct = tf.equal(tf.argmax(prediction, axis=1), tf.argmax(y, axis=1))
         accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
         print('Accuracy => ', accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
@@ -95,10 +95,10 @@ def use(data):
 
 
 # width * height of each image
-inputsize = 28 * 28 
+inputsize = 28 * 28
 
 #how many 'rounds' should we go?
-epochs_no = 20
+epochs_no = 200
 
 x = tf.placeholder('float', [None, inputsize])
 y = tf.placeholder('float')
@@ -119,7 +119,7 @@ n_classes = 10
 batch_size = 80
 
 #how many nodes per layer?
-n_nodes = [700,700,500]
+n_nodes = [1000,1000,500]
 #how many layers do we need?
 n_layers = len(n_nodes)
 
