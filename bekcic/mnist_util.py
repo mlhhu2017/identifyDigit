@@ -55,12 +55,13 @@ def filter_number(data, target, number):
     """Filters the given data for the wanted number."""
     return [x for x, y in zip(data, target) if y == number]
 
-def plot_number(number_vec):
+def plot_number(number_vec,figsize=(10,10) ):
     """Reshapes a vector with shape (784, ) to (28, 28) and draws the image."""
+    plot.figure(figsize=figsize)
     plot.imshow(number_vec.reshape(28, 28), cmap='Greys')
     plot.show()
 
-def plot_all_numbers(numbers, elements_per_line=10, plot_title=""):
+def plot_all_numbers(numbers, elements_per_line=10, scale=True, plot_title=""):
     """Takes a list of arrays and draws them.
 
     Args:
@@ -75,6 +76,11 @@ def plot_all_numbers(numbers, elements_per_line=10, plot_title=""):
 
     reshape_lam = lambda x: np.concatenate([y.reshape(28, 28).T for y in x]).T
     tmp = [reshape_lam(x) for x in lines]
+
+    if scale is False:
+        plot.figure()
+    else:
+        plot.figure(figsize=(15, 15*len(lines)))
 
     plot.title(plot_title)
     plot.imshow(np.concatenate(tmp, axis=0), cmap='Greys')
@@ -129,6 +135,10 @@ def tell_number(pdfs, number):
     pred = [pdf(number) for pdf in pdfs]
     return pred.index(max(pred))
 
+def tell_all_numbers(pdfs, numbers):
+    """Does more than tell_number."""
+    return [tell_number(pdfs, x) for x in numbers]
+
 # https://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python
 def flatten_lists(lists):
     """Flattens a list of lists"""
@@ -136,15 +146,11 @@ def flatten_lists(lists):
 
 # http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-glr-auto-examples-model-selection-plot-confusion-matrix-py
 def plot_confusion_matrix(cm, classes,
-                          normalize=False,
                           title='Confusion matrix',
                           cmap=plot.cm.Blues):
     """
     This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
-    """
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    """    
 
     plot.imshow(cm, interpolation='nearest', cmap=cmap)
     plot.title(title)
@@ -163,3 +169,8 @@ def plot_confusion_matrix(cm, classes,
     plot.tight_layout()
     plot.xlabel('True label')
     plot.ylabel('Predicted label')
+
+def normalize(matrix):
+    return matrix.astype('float') / matrix.sum(axis=1)[:, np.newaxis]
+
+
