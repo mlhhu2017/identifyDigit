@@ -19,6 +19,15 @@ import time
 
 def model(data):
     layers = []
+    trans_img = tf.reshape(data, [-1, 28, 28, 1])
+    h_conv1 = tf.nn.relu(conv2d(trans_img, weight_var([5,5,1,32])) + bias_var([32]))
+    h_pool1 = max_pool_2x2(h_conv1)
+    h_conv2 = tf.nn.relu(conv2d(h_pool1, weight_var([5,5,32,64])) + bias_var([64]))
+    h_pool2 = max_pool_2x2(h_conv2)
+
+    inputsize = 7*7*64
+    pool_flat = tf.reshape(h_pool2, [-1, inputsize])
+
     for i in range(0, n_layers):
         if i == 0:
             l = {
@@ -31,6 +40,8 @@ def model(data):
                 'biases': tf.Variable(tf.random_normal([n_nodes[i]]))
             }
         layers.append(l)
+
+
     output_layer =  {
         'weights': tf.Variable(tf.random_normal([n_nodes[len(n_nodes) - 1], n_classes])),
         'biases': tf.Variable(tf.random_normal([n_classes]))
@@ -40,12 +51,24 @@ def model(data):
     for i in range(0, n_layers):
         a = layers[i]
         if i == 0:
-            lx = tf.add(tf.matmul(data, a['weights']), a['biases'])
+            lx = tf.add(tf.matmul(pool_flat, a['weights']), a['biases'])
         else:
             lx = tf.add(tf.matmul(res[i-1], a['weights']), a['biases'])
         lx = tf.nn.softplus(lx)
         res.append(lx)
     return tf.matmul(res[len(res) - 1], layers[len(layers) - 1]['weights']) + layers[len(layers) - 1]['biases']
+
+def weight_var(shape):
+    init = tf.truncated_normal(shape, stddev=0.1)
+    return tf.Variable(init)
+def bias_var(shape):
+    init = tf.constant(0.1, shape=shape)
+    return tf.Variable(init)
+
+def conv2d(x, W):
+    return tf.nn.conv2d(x, W, strides=[1,1,1,1], padding="SAME")
+def max_pool_2x2(x):
+    return tf.nn.max_pool(x, ksize=[1,2,2,1], strides=[1,2,2,1], padding="SAME")
 
 
 def train(x):
@@ -67,6 +90,7 @@ def train(x):
                     y: epoch_y
                 })
                 epoch_loss += c
+
             print('Saving current epoch to model...')
             tf.train.Saver().save(sess, "./model.ckpt")
             print('Epoch =>', epoch + 1, '/', epochs_no, 'loss =>', epoch_loss)
@@ -116,10 +140,10 @@ one hot means [1,0,0,0,0,0,0,0,0,0] -> its the digit 0
 n_classes = 10
 
 # how many items do we want per batch?
-batch_size = 80
+batch_size = 100
 
 #how many nodes per layer?
-n_nodes = [1000,1000,500]
+n_nodes = [1024, 512, 256, 200, 100]
 #how many layers do we need?
 n_layers = len(n_nodes)
 
